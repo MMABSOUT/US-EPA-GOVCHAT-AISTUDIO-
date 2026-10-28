@@ -1,0 +1,9 @@
+{
+  "name": "GovChat",
+  "description": "An open-source AI chatbot interface with document grounding and multi-model support.",
+  "prompt": "An open-source AI chatbot interface",
+  "permissions": [],
+  "capabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

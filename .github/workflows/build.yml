@@ -1,0 +1,47 @@
+##
+name: Create and publish a Docker image
+
+# Configures this workflow to run every time a change is pushed to the branch 'main' or a tag is pushed.
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - '*'
+
+jobs:
+  build-and-push-image:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Capture the git description to tag the Docker image. If a tag is pushed, it will use the tag, otherwise, it will use the commit SHA.
+      - name: Determine the Git Tag or Commit SHA
+        id: git_tag
+        run: echo "GIT_TAG=$(git describe --always)" >> $GITHUB_ENV
+
+      # Convert the repository name to lowercase and store it in the IMAGE_NAME environment variable
+      - name: Set Image Name
+        run: echo "IMAGE_NAME=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3.3.0
+        with:
+          registry: https://ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Build and push the Docker image with two tags: one using the Git tag or SHA, and another using 'main'.
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6.7.0
+        with:
+          context: .
+          push: true
+          tags: |
+            ghcr.io/${{ env.IMAGE_NAME }}:${{ env.GIT_TAG }}
+            ghcr.io/${{ env.IMAGE_NAME }}:main
