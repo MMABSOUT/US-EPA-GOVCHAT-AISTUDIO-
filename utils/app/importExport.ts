@@ -110,6 +110,19 @@ export const exportData = (filename?: string) => {
   URL.revokeObjectURL(url);
 };
 
+// Helper to deduplicate array items by ID in O(N) time complexity instead of O(N^2)
+function deduplicateById<T extends { id: string | number }>(items: T[]): T[] {
+  const seenIds = new Set<string | number>();
+  const result: T[] = [];
+  for (const item of items) {
+    if (!seenIds.has(item.id)) {
+      seenIds.add(item.id);
+      result.push(item);
+    }
+  }
+  return result;
+}
+
 // Accepts any export format, plus legacy raw localStorage dumps (values stored as JSON strings).
 export const parseImportFile = (text: string): SupportedExportFormats => {
   const data = JSON.parse(text);
@@ -136,13 +149,11 @@ export const importData = (
     ? JSON.parse(oldConversations)
     : [];
 
-  const newHistory: Conversation[] = [
+  // Optimization: Use O(N) Set-based deduplication instead of O(N^2) array.findIndex
+  const newHistory: Conversation[] = deduplicateById([
     ...oldConversationsParsed,
     ...history,
-  ].filter(
-    (conversation, index, self) =>
-      index === self.findIndex((c) => c.id === conversation.id),
-  );
+  ]);
 
   console.log('importData triggered');
 
@@ -158,21 +169,18 @@ export const importData = (
 
   const oldFolders = localStorage.getItem('folders');
   const oldFoldersParsed = oldFolders ? JSON.parse(oldFolders) : [];
-  const newFolders: FolderInterface[] = [
+  const newFolders: FolderInterface[] = deduplicateById([
     ...oldFoldersParsed,
     ...folders,
-  ].filter(
-    (folder, index, self) =>
-      index === self.findIndex((f) => f.id === folder.id),
-  );
+  ]);
   localStorage.setItem('folders', JSON.stringify(newFolders));
 
   const oldPrompts = localStorage.getItem('prompts');
   const oldPromptsParsed = oldPrompts ? JSON.parse(oldPrompts) : [];
-  const newPrompts: Prompt[] = [...oldPromptsParsed, ...prompts].filter(
-    (prompt, index, self) =>
-      index === self.findIndex((p) => p.id === prompt.id),
-  );
+  const newPrompts: Prompt[] = deduplicateById([
+    ...oldPromptsParsed,
+    ...prompts,
+  ]);
   localStorage.setItem('prompts', JSON.stringify(newPrompts));
 
   return {
