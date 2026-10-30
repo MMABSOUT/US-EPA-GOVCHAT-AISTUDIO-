@@ -126,6 +126,21 @@ export const parseImportFile = (text: string): SupportedExportFormats => {
   } as LatestExportFormat;
 };
 
+/**
+ * Helper function to deduplicate an array of objects by their `id` property in O(N) time.
+ * Replaces O(N^2) `.filter((item, index, self) => index === self.findIndex(...))` logic.
+ */
+const deduplicateById = <T extends { id: any }>(items: T[]): T[] => {
+  const seenIds = new Set();
+  return items.filter((item) => {
+    if (seenIds.has(item.id)) {
+      return false;
+    }
+    seenIds.add(item.id);
+    return true;
+  });
+};
+
 export const importData = (
   data: SupportedExportFormats,
 ): LatestExportFormat => {
@@ -136,13 +151,11 @@ export const importData = (
     ? JSON.parse(oldConversations)
     : [];
 
-  const newHistory: Conversation[] = [
+  // Performance optimization: Deduplicate array in O(N) time using a Set instead of O(N^2) findIndex
+  const newHistory: Conversation[] = deduplicateById([
     ...oldConversationsParsed,
     ...history,
-  ].filter(
-    (conversation, index, self) =>
-      index === self.findIndex((c) => c.id === conversation.id),
-  );
+  ]);
 
   console.log('importData triggered');
 
@@ -158,21 +171,17 @@ export const importData = (
 
   const oldFolders = localStorage.getItem('folders');
   const oldFoldersParsed = oldFolders ? JSON.parse(oldFolders) : [];
-  const newFolders: FolderInterface[] = [
+  // Performance optimization: Deduplicate array in O(N) time using a Set instead of O(N^2) findIndex
+  const newFolders: FolderInterface[] = deduplicateById([
     ...oldFoldersParsed,
     ...folders,
-  ].filter(
-    (folder, index, self) =>
-      index === self.findIndex((f) => f.id === folder.id),
-  );
+  ]);
   localStorage.setItem('folders', JSON.stringify(newFolders));
 
   const oldPrompts = localStorage.getItem('prompts');
   const oldPromptsParsed = oldPrompts ? JSON.parse(oldPrompts) : [];
-  const newPrompts: Prompt[] = [...oldPromptsParsed, ...prompts].filter(
-    (prompt, index, self) =>
-      index === self.findIndex((p) => p.id === prompt.id),
-  );
+  // Performance optimization: Deduplicate array in O(N) time using a Set instead of O(N^2) findIndex
+  const newPrompts: Prompt[] = deduplicateById([...oldPromptsParsed, ...prompts]);
   localStorage.setItem('prompts', JSON.stringify(newPrompts));
 
   return {
