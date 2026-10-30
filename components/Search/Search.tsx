@@ -32,11 +32,15 @@ const Search: FC<Props> = ({ placeholder, searchTerm, onSearch }) => {
       />
 
       {searchTerm && (
-        <IconX
-          className="absolute right-4 cursor-pointer text-neutral-300 hover:text-neutral-400"
-          size={18}
+        <button
+          type="button"
+          aria-label={t('Clear search') || 'Clear search'}
+          title={t('Clear search') || 'Clear search'}
+          className="absolute right-3 rounded p-1 text-neutral-300 hover:text-neutral-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-400"
           onClick={clearSearch}
-        />
+        >
+          <IconX size={18} />
+        </button>
       )}
     </div>
   );
