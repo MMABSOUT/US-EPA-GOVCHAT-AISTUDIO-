@@ -273,8 +273,11 @@ export const ChatMessage: FC<Props> = memo(({ message, messageIndex, onEdit }) =
                     const match = /language-(\w+)/.exec(className || '');
 
                     return match ? (
+                      // Performance optimization: Avoid key={Math.random()} which forced React
+                      // to unmount and re-mount CodeBlock and re-run expensive Prism syntax highlighting
+                      // on every render. Omitting the unstable key allows React reconciliation and
+                      // React.memo(CodeBlock) to work as intended.
                       <CodeBlock
-                        key={Math.random()}
                         language={(match && match[1]) || ''}
                         value={String(children).replace(/\n$/, '')}
                         {...props}
