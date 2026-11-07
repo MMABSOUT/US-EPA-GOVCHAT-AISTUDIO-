@@ -19,7 +19,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     const openAI = createAzureOpenAI();
 
     let vectorStoreId: string;// = typeof req.query.vectorStoreId === 'string' ? req.query.vectorStoreId : undefined;
-    const vectorStoreJWE = typeof req.query.vectorStoreJWE === 'string' ? req.query.vectorStoreJWE : undefined;
+    const vectorStoreJWE = typeof req.query?.vectorStoreJWE === 'string' ? req.query.vectorStoreJWE : undefined;
     if (vectorStoreJWE) {
         vectorStoreId = (await decryptVectorStoreJWE(vectorStoreJWE, req.headers['x-ms-client-principal-name']?.toString() || '')).vectorStoreId;
     }

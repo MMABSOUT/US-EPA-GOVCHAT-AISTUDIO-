@@ -1,4 +1,18 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+
+vi.mock('@/utils/lib/azure', () => ({
+  createAzureOpenAI: () => ({
+    files: {
+      create: vi.fn().mockResolvedValue({ id: 'file_test_pdf' }),
+    },
+    vectorStores: {
+      files: {
+        create: vi.fn(),
+      },
+    },
+  }),
+}));
+
 import handler from '@/pages/api/upload';
 import fs from 'fs';
 import path from 'path';

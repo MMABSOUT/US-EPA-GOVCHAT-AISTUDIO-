@@ -68,7 +68,22 @@ const Home = ({
   const [initialRender, setInitialRender] = useState<boolean>(true);
 
   const contextValue = useCreateReducer<HomeInitialState>({
-    initialState: {...initialState, enableWebGrounding }
+    initialState: {
+      ...initialState,
+      enableWebGrounding,
+      defaultModelId,
+      selectedConversation: {
+        id: uuidv4(),
+        name: 'New Conversation',
+        messages: [],
+        model: OpenAIModels[defaultModelId],
+        prompt: DEFAULT_SYSTEM_PROMPT,
+        temperature: DEFAULT_TEMPERATURE,
+        folderId: null,
+        tokenLength: 0,
+        characterLength: 0,
+      },
+    },
   });
 
   const {
